@@ -1,89 +1,97 @@
 import os
 import sys
-
-import click
 import configparser
 
 from yaml import safe_load, safe_dump
 
+from chpip import exception
+
 PY2 = sys.version_info[0] == 2
+WIN = sys.platform == 'win32'
+DEFAULT_INDEX_NAME = 'default'
+DEFAULT_INDEX_URL = 'https://pypi.org/simple'
 
 
 class ChpipManager(object):
 
-    def __init__(self):
-        self._pip_dirname = os.path.expanduser('~/.pip')
-        self._pip_path = os.path.join(self._pip_dirname, 'pip.conf')
-        self._chpip_path = os.path.join(self._pip_dirname, '.chpip.yml')
+    def __init__(self, pip_dirname=None):
+        if WIN:
+            appdata_path = os.getenv('APPDATA')
+            self.pip_dirname = os.path.join(appdata_path, 'pip') if not pip_dirname else pip_dirname
+            self.pip_path = os.path.join(self.pip_dirname, 'pip.ini')
+        else:
+            self.pip_dirname = os.path.expanduser('~/.config/pip') if not pip_dirname else pip_dirname
+            self.pip_path = os.path.join(self.pip_dirname, 'pip.conf')
+        self.chpip_path = os.path.join(self.pip_dirname, '.chpip.yml')
 
     def _ensure_pip_dirname(self):
-        if not os.path.exists(self._pip_dirname):
-            os.makedirs(self._pip_dirname)
+        if not os.path.exists(self.pip_dirname):
+            os.makedirs(self.pip_dirname)
 
     def change_index(self, name=None):
-        self._ensure_pip_dirname()
-        if os.path.exists(self._chpip_path):
-            with open(self._chpip_path, 'r') as f:
-                chpip_data = safe_load(f.read()) or {}
-
+        chpip_data = self.get_chpip_data()
         indexes = chpip_data.get('indexes')
         if not indexes:
-            click.echo('There is no available index to change. Please use `chpip set-index` to set one.')
-            return 1
+            raise exception.NoAvailableIndex()
 
         if name:
             if name not in indexes:
-                click.echo('There is no index with name {}. Please use `chpip set-index` to set one.'.format(name))
-                return 1
+                raise exception.IndexNameNotFound(name=name)
             next_index_url = indexes[name]['index_url']
         else:
             name = chpip_data.get('last_index_name')
             if not name:
-                name = next(indexes.iterkeys() if PY2 else indexes.keys())
+                name = next(indexes.iterkeys() if PY2 else iter(indexes.keys()))
             next_index_url = indexes[name]['index_url']
 
         current_index_name = chpip_data.get('current_index_name')
         if not current_index_name:
-            current_index_name = '.default'
-            current_index_url = 'https://pypi.org/simple'
+            current_index_name = DEFAULT_INDEX_NAME
+            current_index_url = DEFAULT_INDEX_URL
         else:
             current_index_url = indexes[current_index_name]['index_url']
 
-        config = configparser.ConfigParser()
-        config.read(self._pip_path)
+        self._ensure_pip_dirname()
+        config = self.get_pip_config()
         if not config.has_section('global'):
             config.add_section('global')
         config.set('global', 'index-url', next_index_url)
-        with open(self._pip_path, 'w') as f:
+        with open(self.pip_path, 'w') as f:
             config.write(f)
 
-        with open(self._chpip_path, 'w') as f:
+        with open(self.chpip_path, 'w') as f:
             chpip_data['last_index_name'] = current_index_name
             chpip_data['current_index_name'] = name
             indexes = chpip_data['indexes']
             if current_index_name not in indexes:
                 indexes[current_index_name] = {'index_url': current_index_url}
             f.write(safe_dump(chpip_data))
-
-        last = 'last({})'.format(current_index_name.lstrip('.'))
-        click.echo('Change Python package index to `{}` successful.'.format(name or last))
-        return 0
+        return name
 
     def set_index(self, name, index_url):
-        if name.startswith('.'):
-            click.echo('Index name `{}` cannot start with `.`.'.format(name))
-            return 1
+        if name == DEFAULT_INDEX_NAME:
+            raise exception.InvalidIndexName(name=name)
 
         if not index_url.startswith(('http://', 'https://')):
-            click.echo('Invalid base URL `{}` for Python package index.'.format(index_url))
-            return 1
+            raise exception.InvalidIndexURL(url=index_url)
 
+        chpip_data = self.get_chpip_data()
         self._ensure_pip_dirname()
-        with open(self._chpip_path, 'r') as f:
-            chpip_data = safe_load(f.read()) or {}
+        with open(self.chpip_path, 'w') as f:
             indexes = chpip_data.setdefault('indexes', {})
             indexes[name] = {'index_url': index_url}
-        with open(self._chpip_path, 'w') as f:
             f.write(safe_dump(chpip_data))
-            click.echo('Set Python package index with name `{}` successful.'.format(name))
-        return 0
+        return name
+
+    def get_pip_config(self):
+        config = configparser.ConfigParser()
+        config.read(self.pip_path)
+        return config
+
+    def get_chpip_data(self):
+        if os.path.exists(self.chpip_path):
+            with open(self.chpip_path, 'r') as f:
+                chpip_data = safe_load(f.read()) or {}
+        else:
+            chpip_data = {}
+        return chpip_data

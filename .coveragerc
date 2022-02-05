@@ -1,0 +1,8 @@
+[run]
+branch = True
+source = chpip
+
+[paths]
+source =
+   chpip
+   .tox/*/lib/python*/site-packages/chpip
