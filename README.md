@@ -51,7 +51,7 @@ Change Python package index to `default` successful.
 Change the base URL of the Python package index with name.
 
 ```bash
-$ chpip
+$ chpip -n ustc
 Change Python package index to `ustc` successful.
 ```
 
