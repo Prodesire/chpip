@@ -27,7 +27,7 @@ def cli(ctx, name=None):
 @click.option('-n', '--name', required=True, help='Name of the Python package index.')
 @click.option('-i', '--index-url',
               required=True,
-              help='Base URL of the Python Package Index (default https://pypi.org/simple). '
+              help='Base URL of the Python Package Index. '
                    'This should point to a repository compliant with PEP 503 (the simple repository API) '
                    'or a local directory laid out in the same format.')
 @click.pass_context
