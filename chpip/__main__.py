@@ -40,5 +40,11 @@ def set(ctx, name, index_url):
         ctx.exit(1)
 
 
+@cli.command()
+def show():
+    message = pip_manager.show()
+    click.echo(message)
+
+
 if __name__ == '__main__':
     cli()

@@ -54,3 +54,13 @@ Change the base URL of the Python package index with name.
 $ chpip
 Change Python package index to `ustc` successful.
 ```
+
+### Show pip index URLs
+
+Show all base URLs of the Python package index. Current index is marked with `*`.
+
+```bash
+$ chpip show
+  default (https://pypi.org/simple)
+* ustc (https://mirrors.ustc.edu.cn/pypi/web/simple)
+```

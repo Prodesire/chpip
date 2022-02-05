@@ -50,7 +50,7 @@ setup(
     cmdclass={'test': PyTest},
     tests_require=test_requirements,
     install_requires=[
-        'click>=0.7.0,<0.8.0',
+        'click>=0.7.0',
         'pyyaml>=5.0.0,<7.0.0',
     ],
     packages=find_packages(),

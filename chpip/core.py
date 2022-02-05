@@ -2,9 +2,8 @@ import os
 import sys
 import configparser
 
-from yaml import safe_load, safe_dump
-
 from chpip import exception
+from chpip.utils import ordered_load, ordered_dump
 
 PY2 = sys.version_info[0] == 2
 WIN = sys.platform == 'win32'
@@ -65,7 +64,7 @@ class ChpipManager(object):
             indexes = chpip_data['indexes']
             if current_index_name not in indexes:
                 indexes[current_index_name] = {'index_url': current_index_url}
-            f.write(safe_dump(chpip_data))
+            f.write(ordered_dump(chpip_data))
         return name
 
     def set_index(self, name, index_url):
@@ -80,7 +79,7 @@ class ChpipManager(object):
         with open(self.chpip_path, 'w') as f:
             indexes = chpip_data.setdefault('indexes', {})
             indexes[name] = {'index_url': index_url}
-            f.write(safe_dump(chpip_data))
+            f.write(ordered_dump(chpip_data))
         return name
 
     def get_pip_config(self):
@@ -91,7 +90,25 @@ class ChpipManager(object):
     def get_chpip_data(self):
         if os.path.exists(self.chpip_path):
             with open(self.chpip_path, 'r') as f:
-                chpip_data = safe_load(f.read()) or {}
+                chpip_data = ordered_load(f.read()) or {}
         else:
             chpip_data = {}
         return chpip_data
+
+    def show(self):
+        chpip_data = self.get_chpip_data()
+        if not chpip_data:
+            return ''
+
+        current_index_name = chpip_data.get('current_index_name')
+        indexes = chpip_data.get('indexes') or {}
+        lines = []
+        for name in indexes:
+            index_data = indexes[name]
+            index_url = index_data.get('index_url')
+            if name == current_index_name:
+                line = '* {} ({})'.format(name, index_url)
+            else:
+                line = '  {} ({})'.format(name, index_url)
+            lines.append(line)
+        return '\n'.join(lines)
