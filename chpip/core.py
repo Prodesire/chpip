@@ -1,6 +1,8 @@
 import os
 import sys
 import configparser
+import yaml
+import requests
 
 from chpip import exception
 from chpip.utils import ordered_load, ordered_dump
@@ -9,6 +11,7 @@ PY2 = sys.version_info[0] == 2
 WIN = sys.platform == 'win32'
 DEFAULT_INDEX_NAME = 'default'
 DEFAULT_INDEX_URL = 'https://pypi.org/simple'
+SOURCE_PIP_CONFIG_URL = 'https://raw.githubusercontent.com/Prodesire/chpip/main/pip.yml'
 
 
 class ChpipManager(object):
@@ -110,5 +113,19 @@ class ChpipManager(object):
                 line = '* {} ({})'.format(name, index_url)
             else:
                 line = '  {} ({})'.format(name, index_url)
+            lines.append(line)
+        return '\n'.join(lines)
+
+    def list(self):
+        resp = requests.get(SOURCE_PIP_CONFIG_URL)
+        if resp.status_code != 200:
+            raise exception.RequestError(url=SOURCE_PIP_CONFIG_URL, reason=resp.reason)
+
+        pip_conf = yaml.safe_load(resp.text)
+        indexes = pip_conf.get('indexes') or {}
+        lines = []
+        for name in indexes:
+            index_url = indexes[name]
+            line = '  {} ({})'.format(name, index_url)
             lines.append(line)
         return '\n'.join(lines)
