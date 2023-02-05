@@ -1,0 +1,8 @@
+indexes:
+  aliyun: https://mirrors.aliyun.com/pypi/simple
+  douban: https://pypi.doubanio.com/simple
+  netease: https://mirrors.163.com/pypi/simple
+  pypi: https://pypi.org/simple
+  tencent: https://mirrors.cloud.tencent.com/pypi/simple
+  tsinghua: https://pypi.tuna.tsinghua.edu.cn/simple
+  ustc: http://pypi.mirrors.ustc.edu.cn/simple
