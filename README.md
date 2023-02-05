@@ -64,3 +64,18 @@ $ chpip show
   default (https://pypi.org/simple)
 * ustc (https://mirrors.ustc.edu.cn/pypi/web/simple)
 ```
+
+### List commonly used pip index URLs
+
+List the commonly used URLs of the Python package index, which can be set by executing the `chpip set` command.
+
+```bash
+$ chpip list
+  aliyun (https://mirrors.aliyun.com/pypi/simple)
+  douban (https://pypi.doubanio.com/simple)
+  netease (https://mirrors.163.com/pypi/simple)
+  pypi (https://pypi.org/simple)
+  tencent (https://mirrors.cloud.tencent.com/pypi/simple)
+  tsinghua (https://pypi.tuna.tsinghua.edu.cn/simple)
+  ustc (http://pypi.mirrors.ustc.edu.cn/simple)
+```

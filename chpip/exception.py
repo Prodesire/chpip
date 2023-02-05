@@ -20,3 +20,7 @@ class InvalidIndexName(ChpipException):
 
 class InvalidIndexURL(ChpipException):
     msg_fmt = 'Invalid base URL `{url}` for Python package index.'
+
+
+class RequestError(ChpipException):
+    msg_fmt = 'Request to `{url}` error. Reason: {reason}.'

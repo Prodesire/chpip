@@ -52,6 +52,7 @@ setup(
     install_requires=[
         'click>=0.7.0',
         'pyyaml>=5.0.0,<7.0.0',
+        'requests',
     ],
     packages=find_packages(),
     entry_points={

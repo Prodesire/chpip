@@ -23,7 +23,7 @@ def cli(ctx, name=None):
             ctx.exit(1)
 
 
-@cli.command()
+@cli.command(help='Set the base URL of the Python package index with name.')
 @click.option('-n', '--name', required=True, help='Name of the Python package index.')
 @click.option('-i', '--index-url',
               required=True,
@@ -40,10 +40,28 @@ def set(ctx, name, index_url):
         ctx.exit(1)
 
 
-@cli.command()
-def show():
-    message = pip_manager.show()
-    click.echo(message)
+@cli.command(help='Show all base URLs of the Python package index. '
+                  'Current index is marked with *.')
+@click.pass_context
+def show(ctx):
+    try:
+        message = pip_manager.show()
+        click.echo(message)
+    except exception.ChpipException as e:
+        click.echo(str(e))
+        ctx.exit(1)
+
+
+@cli.command(help='List the commonly used URLs of the Python package index, '
+                  'which can be set by executing the `chpip set` command.')
+@click.pass_context
+def list(ctx):
+    try:
+        message = pip_manager.list()
+        click.echo(message)
+    except exception.ChpipException as e:
+        click.echo(str(e))
+        ctx.exit(1)
 
 
 if __name__ == '__main__':
